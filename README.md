@@ -26,4 +26,4 @@ make
 ## Notice
 * As you can see in `exapmle1.txt`, every program text input should be end with the character '#'.
 * Some undefined grammar components (such as "cons", "[]", "#", ",") are supported in limited manner.
-
+* If you want to use parser as an OCaml library, consider the function `Parse.parse` in `src/parse.ml` .
