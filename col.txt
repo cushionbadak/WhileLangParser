@@ -1,5 +1,0 @@
-let x = 1 in let f = proc (y) (x + y) in let x = 2 in let g = proc (y) (x + y) in  (f 1) + (g 1)
-
-letrec double(x) = if (x = 0) then 0 else (double (x-1) + 2) in (double 6)
-
-letrec even(x) = if (x = 0) then true else odd(x-1) and odd(x) = if (x = 0) then false else even(x-1) in (even 13)
