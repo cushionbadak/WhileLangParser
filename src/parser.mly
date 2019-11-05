@@ -59,6 +59,7 @@
 
 programlist:
   | program T_HASHSYM programlist {$1::$3}
+  | program EOF {[$1]}
   | EOF {[]}
 ;
 
