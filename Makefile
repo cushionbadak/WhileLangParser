@@ -4,7 +4,7 @@ all : clean
 	ocamlbuild -use-menhir -Is src/ main.native
 
 exampleRun :
-	ocamlbuild -Is src/ main.native -- example1.txt
+	ocamlbuild -Is src/ main.native -- examples/example1.txt
 	
 clean :
 	ocamlbuild -clean
