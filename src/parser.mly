@@ -52,6 +52,24 @@
 %token T_COMMASYM
 %token EOF
 
+
+/* precedence level settings. */
+%left T_ADDSYM
+%left T_SUBSYM
+%left T_MULSYM
+%left T_DIVSYM
+
+%left T_EQSYM
+%left T_LTSYM
+%right T_NOT
+
+%left T_ELSE
+
+%right T_CONSSYM
+%right T_SCOLONSYM
+
+
+
 %start programlist
 %type <WhileLang.program list> programlist
 
@@ -84,7 +102,7 @@ exp1:
 ;
 
 exp2:
-  | exp2 T_SCOLONSYM exp3 { SEQ($1,$3) }
+  | exp2 T_SCOLONSYM exp2 { SEQ($1,$3) }
   | exp3 {$1}
 ;
 
@@ -94,10 +112,10 @@ exp3:
 ;
 
 exp5:
-  | exp5 T_EQSYM exp66 { EQUAL($1,$3) }
-  | exp5 T_LTSYM exp66 { LESS($1,$3) }
-  | T_NOT exp66 { NOT($2) }
-  | T_IF exp5 T_THEN exp5 T_ELSE exp66 { IF($2,$4,$6) }
+  | exp5 T_EQSYM exp5 { EQUAL($1,$3) }
+  | exp5 T_LTSYM exp5 { LESS($1,$3) }
+  | T_NOT exp5 { NOT($2) }
+  | T_IF exp5 T_THEN exp5 T_ELSE exp5 { IF($2,$4,$6) }
   | exp66 {$1}
 ;
 
@@ -109,7 +127,7 @@ exp6:
   | T_NIL { NIL }
   | T_CONS T_LPARENSYM exp6 T_COMMASYM exp6 T_RPARENSYM { CONS($3,$5) }
   | T_LPARENSYM T_CONS exp6 T_NIL T_RPARENSYM { CONS($3,NIL) }
-  | exp6 T_CONSSYM exp7 { CONS($1,$3) }
+  | exp6 T_CONSSYM exp6 { CONS($1,$3) }
   | T_HEAD exp7 { HEAD($2) }
   | T_TAIL exp7 { TAIL($2) }
   | T_ISNIL exp7 { ISNIL($2) }
@@ -118,14 +136,14 @@ exp6:
 ;
 
 exp7:
-  | exp7 T_ADDSYM exp8 { ADD($1,$3) }
-  | exp7 T_SUBSYM exp8 { SUB($1,$3) }
+  | exp7 T_ADDSYM exp7 { ADD($1,$3) }
+  | exp7 T_SUBSYM exp7 { SUB($1,$3) }
   | exp8 {$1}
 ;
 
 exp8:
-  | exp8 T_MULSYM exp9 { MUL($1,$3) }
-  | exp8 T_DIVSYM exp9 { DIV($1,$3) }
+  | exp8 T_MULSYM exp8 { MUL($1,$3) }
+  | exp8 T_DIVSYM exp8 { DIV($1,$3) }
   | exp9 {$1}
 ;
 
