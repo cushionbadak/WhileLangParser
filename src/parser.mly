@@ -118,14 +118,14 @@ exp6:
 ;
 
 exp7:
-  | exp7 T_MULSYM exp8 { MUL($1,$3) }
-  | exp7 T_DIVSYM exp8 { DIV($1,$3) }
+  | exp7 T_ADDSYM exp8 { ADD($1,$3) }
+  | exp7 T_SUBSYM exp8 { SUB($1,$3) }
   | exp8 {$1}
 ;
 
 exp8:
-  | exp8 T_ADDSYM exp9 { ADD($1,$3) }
-  | exp8 T_SUBSYM exp9 { SUB($1,$3) }
+  | exp8 T_MULSYM exp9 { MUL($1,$3) }
+  | exp8 T_DIVSYM exp9 { DIV($1,$3) }
   | exp9 {$1}
 ;
 
