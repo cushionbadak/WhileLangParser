@@ -1,0 +1,10 @@
+let moda= (proc (x) (proc (y) (x-(y * (x/y))))) in
+let step= (proc (x) (if (moda x 2)=0 then x/2 else 3*x+1)) in
+
+letrec collatzcount(num) = 
+  if (num=1) then 0
+  else(
+    let new_num = (step num) in
+    1+(collatzcount new_num)) 
+in (collatzcount 871)
+#

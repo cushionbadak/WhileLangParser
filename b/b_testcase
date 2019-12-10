@@ -1,0 +1,127 @@
+{
+(*
+  if (1+3 = 12/(4-1)) then true else false
+*)
+IF(EQUAL(ADD(NUM 1,NUM 3),DIV(NUM 12,SUB(NUM 4,NUM 1))),TRUE,FALSE) => Bool true
+
+(*
+  x:=1;x
+*)
+SEQ(ASSIGN("x",NUM 1),VAR "x") => Num (-1)
+
+(*
+  let ret=1 in let n=5 in while(0<n){ret:=ret*n; n:=n-1}; ret
+*)
+LETV("ret",NUM 1,LETV("n",NUM 5,SEQ(WHILE(LESS(NUM 0,VAR "n"),SEQ(ASSIGN("ret",MUL(VAR "ret",VAR "n")),ASSIGN("n",SUB(VAR "n",NUM 1)))),VAR "ret"))) => Num 120
+
+(*
+  let x=2 in x:=1;x
+*)
+LETV("x",NUM 2,SEQ(ASSIGN("x",NUM 1),VAR "x")) => Num 1
+
+(*
+  let proc f(x) = y+1 in let y = 1 in f<y>
+*)
+LETF("f",["x"],ADD(VAR "y",NUM 1),LETV("y",NUM 1,CALLR("f",["y"]))) => Num (-1)
+
+(*
+  let proc f(x1,x2) = x1:=3; x2:=3 in let x1 = 1 in let x2 = 1 in f(x1,x2); x1+x2
+*)
+LETF("f",["x1";"x2"],SEQ(ASSIGN("x1",NUM 3),ASSIGN("x2",NUM 3)),LETV("x1",NUM 1,LETV("x2",NUM 1,SEQ(CALLV("f",[VAR "x1";VAR "x2"]),ADD(VAR "x1",VAR "x2"))))) => Num 2
+
+(*
+  let proc f(x1,x2) = x1:=3; x2:=3 in let x1 = 1 in let x2 = 1 in f<x1,x2>; x1+x2
+*)
+LETF("f",["x1";"x2"],SEQ(ASSIGN("x1",NUM 3),ASSIGN("x2",NUM 3)),LETV("x1",NUM 1,LETV("x2",NUM 1,SEQ(CALLR("f",["x1";"x2"]),ADD(VAR "x1",VAR "x2"))))) => Num 6
+
+(*
+  let proc f(x1,x2) = x1+x2 in f(1,x1) 
+*)
+LETF("f",["x1";"x2"],ADD(VAR "x1",VAR "x2"),CALLV("f",[NUM 1;VAR "x1"])) => Num (-1)
+
+(*
+  let x=1 in let y=2 in let proc f(x1,x2) = x1:=x1*2; x2:=x2+2; x1+x2 in f<x,y>; let r = x+y in r+f(x,y) 
+*)
+LETV("x",NUM 1,LETV("y",NUM 2,LETF("f",["x1";"x2"],SEQ(SEQ(ASSIGN("x1",MUL(VAR "x1",NUM 2)),ASSIGN("x2",ADD(VAR "x2",NUM 2))),ADD(VAR "x1",VAR "x2")),SEQ(CALLR("f",["x";"y"]),LETV("r",ADD(VAR "x",VAR "y"),ADD(VAR "r",CALLV("f",[VAR "x";VAR "y"]))))))) => Num 16
+
+(*
+  let n=5 in let sum = 0 in let proc calc() = while(not(n=0)){sum:=sum+n;n:=n-1} in calc<>;sum
+*)
+LETV("n",NUM 5,LETV("sum",NUM 0,LETF("calc",[],WHILE(NOT(EQUAL(VAR "n",NUM 0)),SEQ(ASSIGN("sum",ADD(VAR "sum",VAR "n")),ASSIGN("n",SUB(VAR "n",NUM 1)))),SEQ(CALLR("calc",[]),VAR "sum")))) => Num 15
+
+(**************** can not parse "n<2"
+  let proc f(n) = if n<2 then 1 else f(n-1)+f(n-2) in f(5)
+****************)
+LETF("f",["n"],IF(LESS(VAR "n",NUM 2),NUM 1,ADD(CALLV("f",[SUB(VAR "n",NUM 1)]),CALLV("f",[SUB(VAR "n",NUM 2)]))),CALLV("f",[NUM 5])) => Num 8
+
+(*
+  let n = 10 in let proc f(x) = if (n=0) then () else x:=x+1;n:=n-1;f<x> in let x = 10 f<x>;x
+*)
+LETV("n",NUM 10,LETF("f",["x"],IF(EQUAL(VAR "n",NUM 0),UNIT,SEQ(SEQ(ASSIGN("x",ADD(VAR "x",NUM 1)),ASSIGN("n",SUB(VAR "n",NUM 1))),CALLR("f",["x"]))),LETV("x",NUM 10,SEQ(CALLR("f",["x"]),VAR "x")))) => Num 20
+
+(*
+  let x = 5 in let y = 5 in let proc f(n) = n:=n+1;() in (f<x>;x)+(f(y);y)
+*)
+LETV("x",NUM 5,LETV("y",NUM 5,LETF("f",["n"],SEQ(ASSIGN("n",ADD(VAR "n",NUM 1)),UNIT),ADD(SEQ(CALLR("f",["x"]),VAR "x"),SEQ(CALLV("f",[VAR "y"]),VAR "y"))))) => Num 11
+
+(*
+  let proc swap(a,b) = let temp = a in a:=b;b:=temp in let x = 1 in let y = 2 in swap<x,y>;x
+*)
+LETF("swap",["a";"b"], LETV("temp",VAR "a",SEQ(ASSIGN("a",VAR "b"),ASSIGN("b",VAR "temp"))),LETV("x",NUM 1,LETV("y",NUM 2,SEQ(CALLR("swap",["x";"y"]),VAR "x")))) => Num 2
+
+(*
+  let f = {} in f; f.f
+*)
+SEQ(LETV("f",RECORD [],VAR "f"),FIELD(VAR "f","f")) => Num (-1)
+
+(*
+  {id:=123, pw:=123}; id
+*)
+SEQ(RECORD([("id",NUM 123);("pw",NUM 123)]),VAR "id") => Num (-1)
+
+(*
+  {id:=123, pw:=123}.id
+*)
+FIELD(RECORD([("id",NUM 123);("pw",NUM 123)]),"id") => Num 123
+
+(*
+  let x = 5 in x.x
+*)
+LETV("x",NUM 5, FIELD(VAR "x","x")) => Num (-1)
+
+(*
+  let f = {x:=true, y:=false} in f.y:= not (not true);f.y
+*)
+LETV("f",RECORD([("x",TRUE);("y",FALSE)]),SEQ(ASSIGNF(VAR "f","y",NOT (NOT TRUE)),FIELD(VAR "f","y"))) => Bool true
+
+(*
+  let f = {x:=5,y:=7} in let x = f in f.x:=6;x.x
+*)
+LETV("f",RECORD([("x",NUM 5);("y",NUM 7)]),LETV("x",VAR "f",SEQ(ASSIGNF(VAR "f","x",NUM 6),FIELD(VAR "x","x")))) => Num 6
+
+(*
+  {x:=1,y:=x}
+*)
+RECORD([("x",NUM 1);("y",VAR "x")]) => Num (-1)
+
+(*
+  let x = 1 in let f = {x:=1, y:=x} in f.y
+*)
+LETV("x",NUM 1,LETV("f",RECORD([("x",NUM 1);("y",VAR "x")]),FIELD(VAR "f","y"))) => Num 1
+
+(*
+  let x = {x:=5,y:=7} in x.x:=x.x+x.y; x.x
+*)
+LETV("x",RECORD([("x",NUM 5);("y",NUM 7)]),SEQ(ASSIGNF(VAR "x","x",ADD(FIELD(VAR "x","x"),FIELD(VAR "x","y"))),FIELD(VAR "x","x"))) => Num 12
+
+(*
+  let f = {x:=10,y:=13} in let proc swap(a,b) = let temp = a in a:=b;b:=temp in swap(f.x,f.y);f.x
+*)
+LETV("f",RECORD([("x",NUM 10);("y",NUM 13)]),LETF("swap",["a";"b"],LETV("temp",VAR "a",SEQ(ASSIGN("a",VAR "b"),ASSIGN("b",VAR "temp"))),SEQ(CALLV("swap",[FIELD(VAR "f","x");FIELD(VAR "f","y")]),FIELD(VAR "f","x")))) => Num 10
+
+(*
+  let num = {n:=5,is_even:=false} in let proc f(n) = while (0=n.n) {n.is_even:=not(n.is_even);n.n:=n.n-1;} in f<num>;num.is_even
+*)
+LETV("num",RECORD([("n",NUM 5);("is_even",FALSE)]),LETF("f",["n"],WHILE(EQUAL(NUM 0,FIELD(VAR "n","n")),SEQ(ASSIGNF(VAR "n","is_even",NOT(FIELD(VAR "n","is_even"))),ASSIGNF(VAR "n","n",SUB(FIELD(VAR "n","n"),NUM 1)))),SEQ(CALLR("f",["num"]),FIELD(VAR "num","is_even")))) => Bool false
+}
+
